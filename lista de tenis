@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
+    <style>
+
+    </style>
+</head>
+<body>
+    <header>
+        <h1>CBTis258</h1>
+        <img src="" alt="">
+        <h2>Publicar tenis</h2>
+    </header>
+    <main class="container">
+        <h3>Lista de Tenis Publicados</h3>
+        <div class="tenis-list" id="lista-tenis"></div>
+    </main>
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+    <script>
+        const tenisPublicados = JSON.parse(localStorage.getItem('tenisPublicados'))  || [];
+
+        function actualizarListaTenis() {
+            const lista = document.getElementById('lista-tenis');
+            lista.innerHTML =  ''; 
+
+            tenisPublicados.forEach((tenis, index) => {
+                tenis.comentarios = tenis.comentarios  || []; 
+                lista.innerHTML +=`
+                    <div class="tenis-item">
+                        <strong>${tenis.modelo}</strong><br>
+                        Precio: $${tenis.precio} MXN<br>
+                        Detalles: ${tenis.descripcion}<br>
+                        <div class="swiper-container" id="swiper-${index}">
+                            <div class="swiper-wrapper">
+                                ${tenis.fotos.map(foto => `<div class="swiper-slide"><img src="${foto}" alt="Tenis"></div>`).join('')}
+                            </div>
+                            <div class="swiper-pagination"></div>
+                            <div class="swiper-button-next"></div>
+                            <div class="swiper-button-prev"></div>
+                        </div>
+                        <div class="comments-container">
+                            <textarea placeholder="Deja tu comentario..." id="comment-${index}"></textarea>
+                            <button onclick="agregarComentario(${index})">Enviar Comentario</button>
+                            <div id="comments-${index}"></div>
+                        </div>
+                    </div>`;
+
+            new Swiper(`#swiper-${index}`, {
+                    pagination: {
+                        el: `.swiper-pagination`,
+                        clickable: true,
+                    },
+                    navigation: {
+                        nextEl: '.swiper-button-next',
+                        prevEl: '.swiper-button-prev',
+                    },
+            });
+
+            mostrarComentarios(index);
+        });
+    }
+
+    function agregarComentario(index) {
+        const comentarioInput = document.getElementById(`comment-${index}`);
+        const comentario = comentarioInput.value;
+        if (comentario) {
+            tenisPublicados[index].comentarios.push(comentario);
+            mostrarComentarios(index);
+            comentarioInput.value = '';
+            localStorage.setItem('tenisPublicados', JSON.stringify(tenisPublicados));
+        }
+    }
+
+    function mostrarComentarios(index) {
+        const comentariosDiv = document.getElementById(`comments-${index}`);
+        comentariosDiv.innerHTML = tenisPublicados[index].comentarios.map(comentario => `<div class="comment-item">${comentario}</div>`).join(''); 
+    }
+
+    window.onload = function() {
+        actualizarListaTenis();
+    }
+    </script>
+</body>
+</html>
